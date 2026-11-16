@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f4dfc8">
+<title>Hak ettim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #f4dfc8; --choc: #5a2a17; --choc2: #8a4a2c; --cream: #fff7ee; --red: #e2473f; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: "Nunito", system-ui, sans-serif; color: var(--choc);
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+  }
+  #stage { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+  header { text-align: center; padding: calc(16px + env(safe-area-inset-top)) 16px 0; flex: none; }
+  #count { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: clamp(26px, 7.5vw, 40px); line-height: 1; }
+  #sub { font-size: 14px; color: var(--choc2); margin-top: 4px; min-height: 1.4em; }
+  #forgive {
+    display: none; margin-top: 10px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer;
+    color: var(--cream); background: var(--red); border: 0; border-radius: 999px; padding: 11px 22px;
+    box-shadow: 0 6px 0 #a92c26; transition: transform .1s, box-shadow .1s;
+  }
+  #forgive:active { transform: translateY(4px); box-shadow: 0 2px 0 #a92c26; }
+
+  #bubbleWrap { flex: 1; min-height: 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; padding: 8px 20px 14px; }
+  #bubble {
+    position: relative; max-width: 330px; background: var(--cream); color: var(--choc);
+    font-family: "Baloo 2", sans-serif; font-weight: 600; font-size: clamp(19px, 5.4vw, 26px); line-height: 1.2;
+    text-align: center; text-wrap: balance; padding: 14px 20px; border-radius: 26px;
+    box-shadow: 0 6px 0 rgba(90, 42, 23, .18); opacity: 0; transform: scale(.6); transform-origin: 50% 100%;
+  }
+  #bubble::after {
+    content: ""; position: absolute; left: 50%; bottom: -13px; width: 26px; height: 26px; background: var(--cream);
+    transform: translateX(-50%) rotate(45deg); border-radius: 4px; box-shadow: 5px 5px 0 rgba(90, 42, 23, .18);
+  }
+  #bubble.pop { animation: pop .35s cubic-bezier(.2, 1.5, .4, 1) forwards; }
+  @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+
+  #me {
+    position: relative; flex: none; width: min(100vw, 42dvh); aspect-ratio: 625 / 900;
+    transform-origin: 50% 100%; cursor: pointer; touch-action: manipulation;
+  }
+  #me img {
+    width: 100%; height: 100%; display: block; pointer-events: none;
+    -webkit-mask-image: radial-gradient(ellipse 19% 6.5% at 47.5% 10%, #000 70%, transparent 100%), linear-gradient(to bottom, transparent 9.5%, #000 12.5%);
+    mask-image: radial-gradient(ellipse 19% 6.5% at 47.5% 10%, #000 70%, transparent 100%), linear-gradient(to bottom, transparent 9.5%, #000 12.5%);
+  }
+  #me::before, #me::after { content: ""; position: absolute; top: 0; bottom: 0; width: 9%; z-index: 1; pointer-events: none; }
+  #me::before { left: -1px; background: linear-gradient(to right, var(--bg), transparent); }
+  #me::after { right: -1px; background: linear-gradient(to left, var(--bg), transparent); }
+  .mark {
+    position: absolute; width: 26%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; z-index: 2;
+    background: radial-gradient(circle, rgba(226, 71, 63, .6), rgba(226, 71, 63, 0) 68%);
+    transform: translate(-50%, -50%); mix-blend-mode: multiply; animation: fade 1.8s ease-out forwards;
+  }
+  @keyframes fade { to { opacity: 0; } }
+
+  .word {
+    position: fixed; z-index: 5; pointer-events: none; font-family: "Baloo 2", sans-serif; font-weight: 800;
+    font-size: clamp(34px, 11vw, 56px); color: var(--red); -webkit-text-stroke: 2px var(--cream); paint-order: stroke fill;
+    text-shadow: 0 4px 0 rgba(90, 42, 23, .25); animation: word .7s ease-out forwards;
+  }
+  @keyframes word {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.3) rotate(var(--r)); }
+    25% { opacity: 1; transform: translate(-50%, -90%) scale(1.15) rotate(var(--r)); }
+    100% { opacity: 0; transform: translate(-50%, -190%) scale(1) rotate(var(--r)); }
+  }
+  .heart { position: fixed; z-index: 4; pointer-events: none; color: var(--red); animation: rise var(--d) linear forwards; }
+  @keyframes rise { from { transform: translateY(0) scale(.7); opacity: 1; } to { transform: translateY(-110vh) scale(1.2); opacity: 0; } }
+
+  #intro {
+    position: fixed; inset: 0; z-index: 10; background: var(--bg); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 28px; transition: opacity .5s;
+  }
+  #intro.off { opacity: 0; pointer-events: none; }
+  #intro h1 { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: clamp(38px, 11vw, 64px); line-height: 1; margin: 0 0 14px; }
+  #intro p { font-size: 17px; line-height: 1.55; max-width: 30ch; margin: 0 0 28px; color: var(--choc2); text-wrap: pretty; }
+  #go {
+    font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 22px; color: var(--cream); background: var(--choc);
+    border: 0; border-radius: 999px; padding: 12px 40px; cursor: pointer; box-shadow: 0 7px 0 #33150a; transition: transform .1s, box-shadow .1s;
+  }
+  #go:active { transform: translateY(5px); box-shadow: 0 2px 0 #33150a; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <header>
+    <div id="count">0 tokat</div>
+    <div id="sub">Bana dokun. Çekinme.</div>
+    <button id="forgive">Tamam, affettim</button>
+  </header>
+  <div id="bubbleWrap"><div id="bubble"></div></div>
+  <div id="me"><img src="me.jpg" alt="" draggable="false"></div>
+</div>
+
+<div id="intro">
+  <h1>Hak ettim.</h1>
+  <p>Hira, kızgınsın ve haklısın. İstediğin kadar vur. Her tokatta sana söylemem gereken bir cümleyi söyleyeceğim.</p>
+  <button id="go">Başla</button>
+</div>
+
+<script>
+(() => {
+  const LINES = [
+    "Hira, üzgünüm.",
+    "Sana yalan söyledim.",
+    "Sadece beni fark et istedim.",
+    "Uzun zamandır sevgini, ilgini ve bana verdiğin değeri göremedim.",
+    "Bunlar yüzünden oldu.",
+    "Çok yanlış bir çözüm olduğunun farkındayım.",
+    "Üzgünüm.",
+    "Ama yine de beni affet.",
+    "Ben bunu düzelteceğim."
+  ];
+  const WORDS = ["ŞAK!", "ÇAT!", "PAT!", "KÜT!", "ŞRAK!"];
+  const $ = id => document.getElementById(id);
+  const me = $("me"), bubble = $("bubble");
+  let hits = 0, forgiven = false, actx = null;
+
+  function slapSound() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      const n = Math.floor(actx.sampleRate * .13), buf = actx.createBuffer(1, n, actx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+      const src = actx.createBufferSource(), f = actx.createBiquadFilter(), g = actx.createGain();
+      src.buffer = buf; f.type = "bandpass"; f.frequency.value = 1500 + Math.random() * 900; f.Q.value = .7; g.gain.value = .9;
+      src.connect(f); f.connect(g); g.connect(actx.destination); src.start();
+    } catch (e) {}
+  }
+  function say(text) {
+    bubble.textContent = text;
+    bubble.classList.remove("pop"); void bubble.offsetWidth; bubble.classList.add("pop");
+  }
+  function heartAt(x, y, size) {
+    const h = document.createElement("div");
+    h.className = "heart"; h.textContent = "♥";
+    h.style.cssText = `left:${x}px;top:${y}px;font-size:${size}px;--d:${2.5 + Math.random() * 2.5}s`;
+    document.body.appendChild(h); h.addEventListener("animationend", () => h.remove());
+  }
+
+  me.addEventListener("pointerdown", e => {
+    const r = me.getBoundingClientRect();
+    if (forgiven) { heartAt(e.clientX - 12, e.clientY - 12, 30); return; }
+    const dir = e.clientX < r.left + r.width / 2 ? 1 : -1;
+    me.animate([
+      { transform: "none" },
+      { transform: `translateX(${dir * 28}px) rotate(${dir * 8}deg) scale(.97)`, offset: .18 },
+      { transform: `translateX(${-dir * 9}px) rotate(${-dir * 2.5}deg)`, offset: .52 },
+      { transform: "none" }
+    ], { duration: 430, easing: "ease-out" });
+
+    const m = document.createElement("div");
+    m.className = "mark"; m.style.left = (e.clientX - r.left) + "px"; m.style.top = (e.clientY - r.top) + "px";
+    me.appendChild(m); m.addEventListener("animationend", () => m.remove());
+
+    const w = document.createElement("div");
+    w.className = "word"; w.textContent = WORDS[Math.floor(Math.random() * WORDS.length)];
+    w.style.left = Math.max(70, Math.min(innerWidth - 70, e.clientX)) + "px"; w.style.top = e.clientY + "px";
+    w.style.setProperty("--r", (Math.random() * 24 - 12) + "deg");
+    document.body.appendChild(w); w.addEventListener("animationend", () => w.remove());
+
+    slapSound();
+    if (navigator.vibrate) navigator.vibrate(25);
+    say(LINES[hits % LINES.length]);
+    hits++;
+    $("count").textContent = hits + " tokat";
+    if (hits >= LINES.length) {
+      $("sub").textContent = "Hepsini söyledim. Devam edebilirsin, hak ettim.";
+      $("forgive").style.display = "inline-block";
+    } else $("sub").textContent = "";
+  });
+
+  $("forgive").onclick = () => {
+    forgiven = true;
+    $("forgive").style.display = "none";
+    $("count").textContent = "Teşekkür ederim";
+    $("sub").textContent = hits + " tokadın hepsini hak ettim.";
+    say("Bu güveni bir daha kırmayacağım, Hira.");
+    setInterval(() => heartAt(Math.random() * innerWidth, innerHeight + 10, 18 + Math.random() * 26), 220);
+  };
+  $("go").onclick = () => $("intro").classList.add("off");
+})();
+</script>
+</body>
+</html>
